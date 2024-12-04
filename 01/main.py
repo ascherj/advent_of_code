@@ -1,3 +1,5 @@
+from collections import Counter
+
 def main():
     with open("input.txt", "r") as f:
         data = f.read().splitlines()
@@ -19,6 +21,15 @@ def main():
         distances += abs(sorted_list_1[i] - sorted_list_2[i])
 
     print(distances)
+
+    counts = Counter(sorted_list_2)
+
+    similarity_score = 0
+
+    for num in sorted_list_1:
+        similarity_score += num * counts[num]
+
+    print(similarity_score)
 
 if __name__ == "__main__":
     main()
