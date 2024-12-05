@@ -33,6 +33,13 @@ def main():
     for report in data:
         if is_good_report(report):
             good_reports += 1
+        else:
+            levels = report.split()
+            for i in range(len(levels)):
+                modified_report = levels[:i] + levels[i + 1 :]
+                if is_good_report(" ".join(modified_report)):
+                    good_reports += 1
+                    break
 
     print(good_reports)
 
