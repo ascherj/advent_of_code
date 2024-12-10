@@ -1,7 +1,23 @@
-from collections import deque
-
 class XmasWordSearcher:
     DIRECTIONS: tuple[tuple[int, int], ...] = ((-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1))
+    MAS_DIRECTIONS = {
+        (1, 1): { # down-right
+            (2, 0): (-1, 1),
+            (0, 2): (1, -1)
+        },
+        (1, -1): { # down-left
+            (0, -2): (1, 1),
+            (2, 0): (-1, -1)
+        },
+        (-1, 1): { # up-right
+            (-2, 0): (1, 1),
+            (0, 2): (-1, -1)
+        },
+        (-1, -1): { # up-left
+            (0, -2): (-1, 1),
+            (-2, 0): (1, -1)
+        }
+    }
 
     def __init__(self, filename: str):
         self.filename: str = filename
@@ -34,39 +50,6 @@ class XmasWordSearcher:
             col += direction[1]
         return 1
 
-    # def _bfs(self, row: int, col: int, word: str) -> int:
-    #     matches = 0
-    #     q: deque[tuple[int, int, str, tuple[int, int]]] = deque()
-    #     q.append((row, col, word, (0, 0)))
-
-    #     if len(word) == 1 and self.grid[row][col] == w[0]:
-    #         return 1
-
-    #     for (dr, dc) in self.DIRECTIONS:
-    #         if (
-    #             0 <= (row + dr) < self.rows and
-    #             0 <= (col + dc) < self.cols and
-    #             self.grid[row + dr][col + dc] == word[1]
-    #         ):
-    #             q.append((row + dr, col + dc, word[1:], (dr, dc)))
-
-    #     while q:
-    #         r, c, w, (dr, dc) = q.popleft()
-
-    #         if len(w) == 1 and self.grid[r][c] == w[0]:
-    #             matches += 1
-    #             continue
-
-    #         if len(w) > 1:
-    #             if (
-    #                 0 <= (r + dr) < self.rows and
-    #                 0 <= (c + dc) < self.cols and
-    #                 self.grid[r + dr][c + dc] == w[1]
-    #             ):
-    #                 q.append((r + dr, c + dc, w[1:], (dr, dc)))
-
-    #     return matches
-
     def search_for_word(self, word: str) -> int:
         matches = 0
 
@@ -78,9 +61,34 @@ class XmasWordSearcher:
 
         return matches
 
+    def _check_mas_direction(self, start_row: int, start_col: int, direction: tuple[int, int]) -> bool:
+        row, col = start_row, start_col
+        for char in "MAS":
+            if not self._inbounds(row, col) or self.grid[row][col] != char:
+                return False
+            row += direction[0]
+            col += direction[1]
+        return True
+
+    def search_for_mas(self) -> int:
+        matches = 0
+
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.grid[r][c] == "M":
+                    for (dr, dc) in self.MAS_DIRECTIONS.keys():
+                        if self._check_mas_direction(r, c, (dr, dc)):
+                            for (r2, c2), direction in self.MAS_DIRECTIONS[(dr, dc)].items():
+                                if self._check_mas_direction(r + r2, c + c2, direction):
+                                    matches += 1
+                                    break
+
+        return int(matches / 2)
+
 def main():
     searcher = XmasWordSearcher("input.txt")
-    print(searcher.search_for_word("XMAS"))
+    print("Part 1:", searcher.search_for_word("XMAS"))
+    print("Part 2:", searcher.search_for_mas())
 
 if __name__ == "__main__":
     main()
