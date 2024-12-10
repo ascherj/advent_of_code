@@ -41,14 +41,14 @@ class XmasWordSearcher:
     def _inbounds(self, r: int, c: int) -> bool:
         return 0 <= r < self.rows and 0 <= c < self.cols
 
-    def _check_direction(self, start_row: int, start_col: int, word: str, direction: tuple[int, int]) -> int:
+    def _check_direction(self, start_row: int, start_col: int, word: str, direction: tuple[int, int]) -> bool:
         row, col = start_row, start_col
         for char in word:
             if not self._inbounds(row, col) or self.grid[row][col] != char:
-                return 0
+                return False
             row += direction[0]
             col += direction[1]
-        return 1
+        return True
 
     def search_for_word(self, word: str) -> int:
         matches = 0
@@ -57,18 +57,9 @@ class XmasWordSearcher:
             for c in range(self.cols):
                 if self.grid[r][c] == word[0]:
                     for (dr, dc) in self.DIRECTIONS:
-                        matches += self._check_direction(r, c, word, (dr, dc))
+                        matches += 1 if self._check_direction(r, c, word, (dr, dc)) else 0
 
         return matches
-
-    def _check_mas_direction(self, start_row: int, start_col: int, direction: tuple[int, int]) -> bool:
-        row, col = start_row, start_col
-        for char in "MAS":
-            if not self._inbounds(row, col) or self.grid[row][col] != char:
-                return False
-            row += direction[0]
-            col += direction[1]
-        return True
 
     def search_for_mas(self) -> int:
         matches = 0
@@ -77,9 +68,9 @@ class XmasWordSearcher:
             for c in range(self.cols):
                 if self.grid[r][c] == "M":
                     for (dr, dc) in self.MAS_DIRECTIONS.keys():
-                        if self._check_mas_direction(r, c, (dr, dc)):
+                        if self._check_direction(r, c, "MAS", (dr, dc)):
                             for (r2, c2), direction in self.MAS_DIRECTIONS[(dr, dc)].items():
-                                if self._check_mas_direction(r + r2, c + c2, direction):
+                                if self._check_direction(r + r2, c + c2, "MAS", direction):
                                     matches += 1
                                     break
 
